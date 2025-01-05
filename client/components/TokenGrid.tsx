@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useEthersSigner } from "@/hooks/useEthersSigner";
-import { tokens } from "@/lib/tokens";
+import { fetchAndUpdateTokens } from "@/lib/getFundingRate";
 import Image from "next/image";
+
 
 interface TokenGridProps {
   onDeposit: (tokenName: string) => void;
@@ -11,7 +13,14 @@ interface TokenGridProps {
 
 export default function TokenGrid({ onDeposit }: TokenGridProps) {
   const signer = useEthersSigner();
+  const [tokens, setTokens] = useState<any[]>([]);
   
+  useEffect(() => {
+    fetchAndUpdateTokens().then((updatedTokens) => {
+      setTokens(updatedTokens);
+    });
+  }, []);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {tokens.map((token) => (
