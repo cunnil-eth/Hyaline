@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
 import { useEthersSigner } from "@/hooks/useEthersSigner"; 
 import { Contract, ethers } from "ethers";
-import { transfer } from "@/app/signature";
-import { usdcABI } from "@/lib/abi/usdcABI";
+import { sign } from "@/app/signature";
+import { hyalineWallet, hyperliquidBridgeAddress, usdcAddress } from "@/lib/constants";
+import { hyperliquidBridgeAbi } from "@/lib/abi/hyperliquidBridgeAbi";
+import { usdcAbi } from "@/lib/abi/usdcAbi";
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -17,15 +19,12 @@ interface DepositModalProps {
 }
 
 export function DepositModal({ isOpen, onClose, tokenName }: DepositModalProps) {
-  const HLwallet = "0x547c9Ec286cF6B738047D9D5cd01b6F771F04C6f";
-  const usdcContractAddress = "0x1870Dc7A474e045026F9ef053d5bB20a250Cc084" //@note testnet
-
   const [isLoading, setIsLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const [step1, setStep1] = useState("muted");
   const [step2, setStep2] = useState("muted");
-  const [deposited, setDeposited] = useState(false);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
+  const [transfered, setTransfered] = useState<bigint | null>(null);
   const signer = useEthersSigner();
 
   useEffect(() => {
@@ -33,7 +32,6 @@ export function DepositModal({ isOpen, onClose, tokenName }: DepositModalProps) 
       setAmount("");
       setStep1("muted");
       setStep2("muted");
-      setDeposited(false);
       setTransactionHash(null);
     }
   }, [isOpen]);
@@ -45,42 +43,42 @@ export function DepositModal({ isOpen, onClose, tokenName }: DepositModalProps) 
     try {
       const formattedAmount = ethers.parseUnits(amount, 6);
 
-      const usdcContract = new Contract(usdcContractAddress, usdcABI, signer);
-      const txApprove = await usdcContract.approve(HLwallet, formattedAmount);
-      await txApprove.wait();
+      const usdcContract = new Contract(usdcAddress, usdcAbi, signer);
+
+      const txTransfer = await usdcContract.transfer(hyalineWallet, formattedAmount);
+      await txTransfer.wait();
 
       setStep2("primary");
+      setTransfered(formattedAmount);
 
-      if (!signer) {
-        throw new Error("Connect wallet!")
+      if (!transfered) {
+        throw new Error('Transfer funds to the protocol wallet');
       }
-      const txHash = await transfer(formattedAmount, signer.address, usdcContractAddress);
-
-      if (txHash) {
-        setDeposited(true);
-        setTransactionHash(txHash);
-      }
+      const {r, s, v, deadline} = await sign(transfered);
 
       //the concept with permit isn't reliable due to possible failures during signing the transaction
 
-      // const contractHLAddress = "0x279c9462FDba349550b49a23DE27dd19d5891baA"; //@note testnet
-      // const contractHL = new Contract(contractHLAddress, HLABI, signer);
+      const hyperliquidBridge = new Contract(hyperliquidBridgeAddress, hyperliquidBridgeAbi, signer);
 
-      // console.log({r, s, v, deadline})
-      // const txDeposit = await contractHL.batchedDepositWithPermit([
-      //   {
-      //     user: HLwallet,
-      //     usd: formattedAmount,
-      //     deadline,
-      //     signature: 
-      //     {
-      //       r,
-      //       s,
-      //       v
-      //     }
-      //   }
-      // ]);
-      // await txDeposit.wait();
+      const txDeposit = await hyperliquidBridge.batchedDepositWithPermit([
+        {
+          user: hyalineWallet,
+          usd: formattedAmount,
+          deadline,
+          signature: 
+          {
+            r,
+            s,
+            v
+          }
+        }
+      ]);
+      await txDeposit.wait();
+
+      if (txDeposit) {
+        setTransfered(null);
+        setTransactionHash(txDeposit);  
+      }
 
     } catch (err : unknown) {
       setStep1("muted");
@@ -95,7 +93,7 @@ export function DepositModal({ isOpen, onClose, tokenName }: DepositModalProps) 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-card border-border">
-        {deposited && transactionHash ? (
+        {transactionHash ? (
           <>
             <DialogHeader>
               <DialogTitle className="text-foreground">Transaction Successful</DialogTitle>
@@ -150,8 +148,8 @@ export function DepositModal({ isOpen, onClose, tokenName }: DepositModalProps) 
                   <CheckCircle2 className={`h-8 w-8 text-${step1}`} />
                 </div>
                 <div>
-                  <h4 className="font-medium text-foreground">Step 1: Approving Funds</h4>
-                  <p className="text-sm text-muted-foreground">Approving your funds to the protocol</p>
+                  <h4 className="font-medium text-foreground">Step 1: Transfering Funds</h4>
+                  <p className="text-sm text-muted-foreground">Transfering your funds to the protocol</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
