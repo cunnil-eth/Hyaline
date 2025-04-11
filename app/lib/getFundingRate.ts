@@ -45,16 +45,18 @@ export async function fetchAndUpdateTokens() {
   const updatedTokens: Token[] = await Promise.all(
     tokens.map(async (token) => {
       try {
-        const apr = await Promise.all(
+        const aprEntries = await Promise.all(
           Object.entries(intervals).map(async ([key, days]) => {
             const fundingRate = await calculateFundingRate(token.name, days);
-            return { [key]: fundingRate };
+            return [key, fundingRate] as const;
           })
         );
-
-        token.apr = apr.reduce((acc, intervalApr) => {
-          return { ...acc, ...intervalApr };
-        }, {});
+        
+        token.apr = Object.fromEntries(aprEntries) as {
+          "1d": string;
+          "7d": string;
+          "30d": string;
+        };
 
         return token; 
       } catch (err : unknown) {
