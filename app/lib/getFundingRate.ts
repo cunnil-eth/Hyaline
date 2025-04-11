@@ -2,6 +2,7 @@
 
 import { Hyperliquid } from 'hyperliquid';
 import { tokens } from './tokens';
+import type { Token } from './tokens';
 
 const hyperliquid = new Hyperliquid({
     enableWs: true,
@@ -41,7 +42,7 @@ export async function fetchAndUpdateTokens() {
     "30d": 30,
   };
 
-  const updatedTokens = await Promise.all(
+  const updatedTokens: Token[] = await Promise.all(
     tokens.map(async (token) => {
       try {
         const apr = await Promise.all(

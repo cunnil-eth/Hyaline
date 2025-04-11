@@ -17,7 +17,7 @@ export default function Navbar() {
               <h1 className="text-lg font-semibold text-white md:block hidden">Hyaline</h1>
             </div>
             <div className="hidden md:flex space-x-6">
-              <Link href="/markets" className="text-white/70 hover:text-white transition-colors">
+              <Link href="/" className="text-white/70 hover:text-white transition-colors">
                 Markets
               </Link>
               <Link href="/dashboard" className="text-white/70 hover:text-white transition-colors">
