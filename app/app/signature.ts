@@ -1,4 +1,4 @@
-"use client"
+"use server"
 
 import { usdcAbi } from "@/lib/abi/usdcAbi";
 import { hyperliquidBridgeAddress, usdcAddress } from "@/lib/constants";
