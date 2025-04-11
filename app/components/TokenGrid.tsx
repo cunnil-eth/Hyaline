@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useEthersSigner } from "@/hooks/useEthersSigner";
-import { fetchAndUpdateTokens } from "@/lib/getFundingRate";
 import Image from "next/image";
-
+import { useEffect, useState } from "react";
+import type { Token } from '@/lib/tokens';
 
 interface TokenGridProps {
   onDeposit: (tokenName: string) => void;
@@ -13,12 +12,16 @@ interface TokenGridProps {
 
 export default function TokenGrid({ onDeposit }: TokenGridProps) {
   const signer = useEthersSigner();
-  const [tokens, setTokens] = useState<any[]>([]);
-  
+  const [tokens, setTokens] = useState<Token[]>([]);
+
   useEffect(() => {
-    fetchAndUpdateTokens().then((updatedTokens) => {
-      setTokens(updatedTokens);
-    });
+    async function fetchApr() {
+      const response = await fetch(`./api/apr/`);
+      const data = await response.json();
+      setTokens(data.tokens);
+    }
+
+    fetchApr();
   }, []);
 
   return (

@@ -1,4 +1,15 @@
-export const tokens = [
+export interface Token {
+  name: string;
+  image: string;
+  apr: {
+      "1d": string;
+      "7d": string;
+      "30d": string;
+  };
+  tvl: string;
+}
+
+export const tokens: Token[] = [
     {
       name: "AI16Z",
       image: "https://image.coinpedia.org/app_uploads/markets/cryptocurrencies/1735621358682snjvinssgh.webp",
