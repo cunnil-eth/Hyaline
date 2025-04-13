@@ -37,7 +37,8 @@ const Index = () => {
           <p className="text-white/80 text-lg md:text-xl max-w-2xl mb-12">
             Discover a world of a delta-neutral strategy built on top of the most popular Perp DEX
           </p>
-          <button 
+          <button
+            onClick={() => window.location.href = "https://hyaline-app.vercel.app/"}
             className="px-8 py-3 bg-white text-black font-medium rounded-lg transition-all duration-300 hover:bg-transparent hover:text-white border border-white"
           >
             Explore
