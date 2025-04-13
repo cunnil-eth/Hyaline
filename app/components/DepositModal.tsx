@@ -18,7 +18,7 @@ interface DepositModalProps {
   tokenName: string;
 }
 
-export function DepositModal({ isOpen, onClose, tokenName }: DepositModalProps) {
+export default function DepositModal({ isOpen, onClose, tokenName }: DepositModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const [step1, setStep1] = useState("muted");
