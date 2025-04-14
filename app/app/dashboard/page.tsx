@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [selectedToken, setSelectedToken] = useState("");
   const [selectedBalance, setSelectedBalance] = useState(0);
   const signer = useEthersSigner();
+  const address = signer?.address;
   
   const handleWithdraw = (tokenName: string, tokenBalance: number) => {
     setSelectedToken(tokenName);
@@ -32,8 +33,12 @@ export default function Dashboard() {
             </div>
           </div>
         ) : ( <>
-          <MetricsBar />
+          <MetricsBar
+            main={false}
+            address={address} 
+          />
           <TokenTable
+            address={address}
             onWithdraw={handleWithdraw}
           />
         </>)}

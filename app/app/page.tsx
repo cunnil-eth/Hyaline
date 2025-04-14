@@ -21,7 +21,9 @@ export default function Home() {
       <Background />
       <div className="relative flex flex-col flex-grow">
         <main className="container mx-auto px-4 py-8 flex-grow">
-          <MetricsBar />
+          <MetricsBar 
+            main={true}
+          />
           <TokenGrid 
             onDeposit={handleDeposit}
           />
